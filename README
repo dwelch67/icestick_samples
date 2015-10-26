@@ -1,0 +1,59 @@
+
+So I ran across this
+
+http://hackaday.com/2015/08/27/learning-verilog-for-fpgas-hardware-at-last/
+
+among other related articles realted to the icestick
+
+http://www.latticesemi.com/icestick
+
+and the icestorm
+
+http://www.clifford.at/icestorm/
+
+and related tools.  At last some tolerable fpga software, I really
+need to go and understand what they did to perhaps apply it to other
+products.  Anyway...
+
+Now that I have fpga software that "just works" I dont have to spend
+a night or weekend fighting the tools to get the first led blinker,
+instead a few minutes later leds were blinking...
+
+You may know from other repos I am a fan of CDL.  
+
+http://cyclicity-cdl.sourceforge.net/
+
+Unfortunately the sourceforge page doesnt really show what you need
+to know to just get going on it.  Maybe the examples do but not really.
+I work with Gavin and where we work we (they, chip team) have developed
+some fairly large designs with this language.  So I have access to lots
+of example code, and have lots of sim time using the simulator, so I
+have a pretty good handle on it.  In short I think if it as verilog
+done right, it outputs C++ and/or verilog so that you can 1) sim for
+free and 2) build something.  The output verilog does look machine
+generated, yes, agreed...and may be more verbose than you would write
+by hand.  I dont disagree with you there, and sure like any language
+to language compiler there are opportunities for optimization.  Agree
+with all of those things.  I just prefer the cdl to verilog path most
+of the time than straight verilog, just my thing.  I have left the
+verilog here too, if you want to start there, the Makefiles work fine.
+(If you were to choose to use cdl you may need to refer to one of my
+other repos or just ask me)
+
+There is an example demo blinker that either icestorm folks or hackaday
+person provided with the pcf files needed.  I took/used those (well you
+use one, there is a full one and then one with stuff commented out
+based on what is being used).
+
+Go to the icestorm link above and follow the simple instructions for
+cloning the repos and building the tools, in the order shown.  They
+also show how to use the tools and that is basically how I am using them.
+
+The icestick is available from Mouser and perhaps others, for just over
+$20.
+
+Start with blinker01
+
+
+
+

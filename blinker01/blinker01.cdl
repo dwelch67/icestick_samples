@@ -1,0 +1,32 @@
+
+module blinker01
+(
+    clock clk,
+    output bit LED1,
+    output bit LED2,
+    output bit LED3,
+    output bit LED4,
+    output bit LED5,
+    input bit PMOD1,
+    input bit PMOD2,
+    input bit PMOD3,
+    input bit PMOD4
+)
+{
+    default clock clk;
+    default reset active_high PMOD4 ;
+
+    clocked bit[32] XCOUNT = 0;
+
+    the_code:
+    {
+        XCOUNT <= XCOUNT + 1;
+
+        LED1 = XCOUNT[21];
+        LED2 = XCOUNT[22];
+        LED3 = XCOUNT[23];
+        LED4 = XCOUNT[24];
+        LED5 = XCOUNT[25];
+        
+    }
+}

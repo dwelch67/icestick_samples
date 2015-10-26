@@ -1,0 +1,36 @@
+
+See top level README for info on documentation and tools.
+
+This is a super simple example.  Just a 32 bit counter (likely optimized
+to fewer bits) where some of the bits are output to the leds on the
+icestick.
+
+        LED1 = XCOUNT[21];
+        LED2 = XCOUNT[22];
+        LED3 = XCOUNT[23];
+        LED4 = XCOUNT[24];
+        LED5 = XCOUNT[25];
+
+you can run make to build and/or make prog to build and load.  If you
+dont want to mess with cdl, then dont touch the cdl file just the verilog
+file and the make will work from that.
+
+The green led blinks about once every 3 seconds perhaps.  But you can
+see that it is working, if you dont get blinking leds, then stop here
+and figure out why.
+
+Next I did this
+
+        LED1 = XCOUNT[27];
+        LED2 = XCOUNT[28];
+        LED3 = XCOUNT[29];
+        LED4 = XCOUNT[30];
+        LED5 = XCOUNT[31];
+
+the first led changes state about every 11 seconds, so 2^27/11 is 12
+million.  2^27/12 million is a smidge over 11 seconds. so that sounds
+like the input clock to this verilog is a 12Mhz clock.  Good to know.
+
+Also from this we can see which led is which between the code and the
+layout of the board.
+        
