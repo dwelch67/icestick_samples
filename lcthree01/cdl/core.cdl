@@ -1,0 +1,258 @@
+
+constant integer VBIT = 3;
+constant integer NBIT = 2;
+constant integer CBIT = 1;
+constant integer ZBIT = 0;
+
+typedef struct
+{
+   bit[16] value;
+} reg_type;
+
+module core
+(
+    clock          clock_in,
+    input  bit     reset_in,
+
+    input  bit[16] mem_in,
+    output bit[16] mem_out,
+    output bit[16] mem_add,
+    output bit[1]  mem_oe,
+    output bit[1]  mem_we,
+    output bit[1]  mem_fetch,
+    output bit[8]  led_out
+)
+{
+    default clock clock_in ;
+    default reset active_high reset_in ;
+
+    comb    bit[16] pc_next;
+    //comb    bit[16] pc_temp;
+    //comb    bit[1]  tbit;
+    //comb    bit[16] tword;
+
+    clocked bit[8] led = 0;
+
+    clocked bit[16] inst = 16hFFFF;
+
+    clocked bit[2] xstate = 2b00;
+    comb    bit[2] xstate_next;
+
+    clocked reg_type[8] reg = {{value=0}};
+    clocked bit[16] pc = 0x3000;
+    clocked bit[16] psr = 0;
+
+    comb bit[16] op_a;
+    comb bit[16] op_b;
+    comb bit[16] op_res;
+    comb bit[8] trap;
+
+    //comb bit[4]  shift_amt;
+
+    comb bit[3] xdr;
+    comb bit[3] xsr1;
+    comb bit[3] xsr2;
+
+    the_code:
+    {
+        pc_next = 0x0000;
+        //pc_temp = 0x0000;
+        mem_oe = 0;
+        mem_we = 0;
+        mem_add = 0x0000;
+        mem_out = 0x0000;
+        mem_fetch = 0;
+        xdr = 0;
+        xsr1 = 0;
+        xsr2 = 0;
+        op_a = 0;
+        op_b = 0;
+        op_res = 0;
+        trap = 0;
+
+        led_out = led;
+
+        full_switch(xstate)
+        {
+            case 0: //reset
+            {
+                xstate_next = 3;
+                pc <= 0x3000;
+                reg[  0].value <= 0; reg[  1].value <= 1;
+                reg[  2].value <= 2; reg[  3].value <= 3;
+                reg[  4].value <= 0; reg[  5].value <= 0;
+                reg[  6].value <= 0; reg[  7].value <= 0;
+            }
+            case 1: //halt
+            {
+                xstate_next = 1;
+                mem_add = 0xFFFF;
+                inst <= inst;
+                pc <= 0xFFFF;
+            }
+            case 2: //execute
+            {
+                xstate_next = 3;
+                inst <= inst;
+
+                full_switch(inst[4;12])
+                {
+                    case 4b0000: //br why would this not be in this state?
+                    {
+                        if(inst[3;9] & psr[3;0])
+                        {
+                            op_a = pc;
+                            if(inst[8])
+                            {
+                                op_b = bundle(7h7F,inst[9;0]);
+                            }
+                            else
+                            {
+                                op_b = bundle(7h00,inst[9;0]);
+                            }
+                            op_res = op_a + op_b;
+                            pc <= op_res;
+                        }
+                    }
+                    case 4b0001: //add
+                    {
+                        if(inst[5]==0)
+                        {
+                            xdr = inst[3;9];
+                            xsr1 = inst[3;6];
+                            xsr2 = inst[3;0];
+                            op_a = reg[xsr1].value;
+                            op_b = reg[xsr2].value;
+                        }
+                        else
+                        {
+                            xdr = inst[3;9];
+                            xsr1 = inst[3;6];
+                            op_a = reg[xsr1].value;
+                            if(inst[4]==0)
+                            {
+                                op_b = bundle(11h000,inst[5;0]);
+                            }
+                            else
+                            {
+                                op_b = bundle(11h7FF,inst[5;0]);
+                            }
+                        }
+                        op_res = op_a + op_b;
+                        if(op_res[15] == 0)
+                        {
+                            if(op_res == 0)
+                            {
+                                psr[3;0] <= 3b010;
+                            }
+                            else
+                            {
+                                psr[3;0] <= 3b001;
+                            }
+                        }
+                        else
+                        {
+                            psr[3;0] <= 3b100;
+                        }
+                        reg[xdr].value <= op_res[16;0];
+                    }
+                    case 4b1001: //not
+                    {
+                        xdr = inst[3;9];
+                        xsr1 = inst[3;6];
+                        op_a = reg[xsr1].value;
+                        op_res = ~op_a;
+                        if(op_res[15] == 0)
+                        {
+                            if(op_res == 0)
+                            {
+                                psr[3;0] <= 3b010;
+                            }
+                            else
+                            {
+                                psr[3;0] <= 3b001;
+                            }
+                        }
+                        else
+                        {
+                            psr[3;0] <= 3b100;
+                        }
+                        reg[xdr].value <= op_res[16;0];
+                    }
+                    case 4b0101: //and
+                    {
+                        if(inst[5]==0)
+                        {
+                            xdr = inst[3;9];
+                            xsr1 = inst[3;6];
+                            xsr2 = inst[3;0];
+                            op_a = reg[xsr1].value;
+                            op_b = reg[xsr2].value;
+                        }
+                        else
+                        {
+                            xdr = inst[3;9];
+                            xsr1 = inst[3;6];
+                            op_a = reg[xsr1].value;
+                            if(inst[4]==0)
+                            {
+                                op_b = bundle(11h000,inst[5;0]);
+                            }
+                            else
+                            {
+                                op_b = bundle(11h7FF,inst[5;0]);
+                            }
+                        }
+                        op_res = op_a & op_b;
+                        if(op_res[15] == 0)
+                        {
+                            if(op_res == 0)
+                            {
+                                psr[3;0] <= 3b010;
+                            }
+                            else
+                            {
+                                psr[3;0] <= 3b001;
+                            }
+                        }
+                        else
+                        {
+                            psr[3;0] <= 3b100;
+                        }
+                        reg[xdr].value <= op_res[16;0];
+                    }
+                    case 4b1111: //trap
+                    {
+                        trap = inst[8;0];
+                        if(trap == 8h25)
+                        {
+                            led <= led + 1;
+                        }
+                        if(trap == 8hFF)
+                        {
+                            xstate_next = 1;
+                        }
+                    }
+                    default:
+                    {
+                        xstate_next = 1;
+                    }
+                }
+            }
+            case 3: //fetch
+            {
+                xstate_next = 2;
+                mem_oe = 1;
+                mem_fetch = 0;
+                mem_add = pc;
+                pc <= pc + 1;
+                inst <= mem_in;
+            }
+            default:
+            {
+                xstate_next = 1;
+            }
+        }
+        xstate <= xstate_next;
+    }
+}

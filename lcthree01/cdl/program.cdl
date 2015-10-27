@@ -1,0 +1,7 @@
+case 16h3000: { out_data = 0x9040; }
+case 16h3001: { out_data = 0x5060; }
+case 16h3002: { out_data = 0x9000; }
+case 16h3003: { out_data = 0x103F; }
+case 16h3004: { out_data = 0x0BFE; }
+case 16h3005: { out_data = 0xF025; }
+case 16h3006: { out_data = 0x0FF9; }
