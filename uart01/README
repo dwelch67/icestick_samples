@@ -1,0 +1,9 @@
+
+See top level README for info on documentation and tools.
+
+This sends a 115200 baud square wave out the uart tx pin, which
+is the ascii character 'U'.  The on board ftdi is connected to this
+so on mine it shows up on the second of two uarts for the ftdi, you may
+have to try however many show up on your computer/OS to find the one
+spitting out the letter U.
+
