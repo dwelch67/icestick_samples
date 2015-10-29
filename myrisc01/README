@@ -1,0 +1,11 @@
+
+See top level README for info on documentation and tools.
+
+This is my first (ugly, doesnt fit) implementation of the
+Ridiculously Simple Computer.  The instruction set is defined here:
+
+http://www.eng.umd.edu/~blj/RiSC/
+
+I also have a repo myrisc with tools and a simulator.
+
+

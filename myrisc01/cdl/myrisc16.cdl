@@ -1,0 +1,129 @@
+
+typedef struct
+{
+   bit[16] value;
+} reg_type;
+
+module myrisc16
+(
+    clock          in_clock,
+    input  bit     in_reset,
+    output bit[8]   out_led
+)
+{
+    default clock in_clock ;
+    default reset active_high in_reset ;
+
+    clocked bit[8] XCOUNT = 0;
+
+    clocked bit[2] xstate = 0;
+    comb    bit[2] xstate_next;
+
+    clocked reg_type[16] mem = {{value=16hFFFF}};
+    clocked reg_type[8] reg = {{value=0}};
+    clocked bit[16] pc = 0;
+
+    clocked bit[16] inst = 0;
+
+    comb    bit[3] opcode;
+    comb    bit[3] rega;
+    comb    bit[3] regb;
+    comb    bit[3] regc;
+    comb    bit[16] simm7;
+    comb    bit[10] imm10;
+    comb    bit[16] memadd;
+    
+
+    top_code:
+    {
+        XCOUNT <= XCOUNT + 1;
+        out_led = mem[15].value[8;0];
+
+
+        opcode = inst[3;13];
+        rega   = inst[3;10];
+        regb   = inst[3;7];
+        regc   = inst[3;0];
+        if(inst[6]==1b0) { simm7 = bundle(9b000000000,inst[7;0]); }
+        else             { simm7 = bundle(9b111111111,inst[7;0]); }
+        imm10  = inst[10;0];
+        
+        xstate_next = 3;
+        full_switch(xstate)
+        {
+            case 0: //reset
+            {
+                xstate_next = 1;
+                pc <= 0;
+                reg[0].value <= 0;
+                reg[1].value <= 1;
+                reg[2].value <= 2;
+                reg[3].value <= 3;
+                reg[4].value <= 4;
+                reg[5].value <= 5;
+                reg[6].value <= 6;
+                reg[7].value <= 7;
+include "program.cdl"
+            }
+            case 1:
+            {
+                xstate_next = 2;
+                inst <= mem[pc[4;0]].value;
+                pc <= pc + 1;
+            }
+            case 2:
+            {
+                xstate_next = 1;
+                full_switch(opcode)
+                {
+                    case 3b000: //add
+                    {
+                        reg[rega].value <= reg[regb].value + reg[regc].value;
+                    }
+                    case 3b001: //addi
+                    {
+                        reg[rega].value <= reg[regb].value + simm7;
+                    }
+                    case 3b010: //nand
+                    {
+                        reg[rega].value <= ~(reg[regb].value & reg[regc].value);
+                    }
+                    case 3b011: //lui
+                    {
+                        reg[rega].value <= bundle(imm10,6b000000);
+                    }
+                    case 3b100: //sw
+                    {
+                        memadd = reg[regb].value + simm7;
+                        mem[memadd[4;0]].value <= reg[rega].value;
+                    }
+                    case 3b101: //lw
+                    {
+                        memadd = reg[regb].value + simm7;
+                        reg[rega].value <= mem[memadd[4;0]].value;
+                    }
+                    case 3b110: //beq
+                    {
+                        if(reg[rega].value == reg[regb].value)
+                        {
+                            pc <= pc + simm7;
+                        }
+                    }
+                    //case 3b111: //jalr
+                    default:
+                    {
+                        if(inst[7;0]) { xstate_next = 3; } //halt
+                        reg[rega].value <= pc;
+                        pc <= reg[regb].value;
+                    }
+                }
+            }
+            default:
+            {
+                xstate_next = 3;
+            }
+        }
+        xstate <= xstate_next;
+        reg[0].value <= 0;
+    }
+}

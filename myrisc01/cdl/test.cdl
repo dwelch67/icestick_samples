@@ -1,0 +1,16 @@
+mem[0].value <= 16h6C00;
+mem[1].value <= 16h240A;
+mem[2].value <= 16h4800;
+mem[3].value <= 16h0482;
+mem[4].value <= 16hC401;
+mem[5].value <= 16hC07D;
+mem[6].value <= 16h2D81;
+mem[7].value <= 16h8C1F;
+mem[8].value <= 16hC078;
+mem[9].value <= 16hFFFF;
+mem[10].value <= 16hFFFF;
+mem[11].value <= 16hFFFF;
+mem[12].value <= 16hFFFF;
+mem[13].value <= 16hFFFF;
+mem[14].value <= 16hFFFF;
+mem[15].value <= 16hFFFF;
