@@ -1,0 +1,16 @@
+case 16h0000: { inst <= 16h6C00; }
+case 16h0001: { inst <= 16h4400; }
+case 16h0002: { inst <= 16h4800; }
+case 16h0003: { inst <= 16h0482; }
+case 16h0004: { inst <= 16hC401; }
+case 16h0005: { inst <= 16hC07D; }
+case 16h0006: { inst <= 16h2D81; }
+case 16h0007: { inst <= 16h8C1F; }
+case 16h0008: { inst <= 16hC078; }
+case 16h0009: { inst <= 16hFFFF; }
+case 16h000A: { inst <= 16hFFFF; }
+case 16h000B: { inst <= 16hFFFF; }
+case 16h000C: { inst <= 16hFFFF; }
+case 16h000D: { inst <= 16hFFFF; }
+case 16h000E: { inst <= 16hFFFF; }
+case 16h000F: { inst <= 16hFFFF; }
