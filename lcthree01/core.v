@@ -78,9 +78,8 @@ module core
     //b the_code__comb combinatorial process
     always @( //the_code__comb
         xstate or
-        pc or
         inst or
-        psr or
+        pc or
         reg__value[0] or
         reg__value[1] or
         reg__value[2] or
@@ -90,10 +89,14 @@ module core
         reg__value[6] or
         reg__value[7]        //reg__value - Xilinx does not want arrays in sensitivity lists
  or
+        psr or
+        mem_in or
         led )
     begin: the_code__comb_code
     reg mem_oe__var;
+    reg mem_we__var;
     reg [15:0]mem_add__var;
+    reg [15:0]mem_out__var;
     reg mem_fetch__var;
     reg [2:0]xdr__var;
     reg [2:0]xsr1__var;
@@ -105,9 +108,9 @@ module core
     reg [1:0]xstate_next__var;
         pc_next = 16'h0;
         mem_oe__var = 1'h0;
-        mem_we = 1'h0;
+        mem_we__var = 1'h0;
         mem_add__var = 16'h0;
-        mem_out = 16'h0;
+        mem_out__var = 16'h0;
         mem_fetch__var = 1'h0;
         xdr__var = 3'h0;
         xsr1__var = 3'h0;
@@ -120,33 +123,19 @@ module core
         case (xstate) //synopsys parallel_case
         2'h0: // req 1
             begin
-            xstate_next__var = 2'h3;
+            xstate_next__var = 2'h1;
             end
         2'h1: // req 1
             begin
-            xstate_next__var = 2'h1;
-            mem_add__var = 16'hffff;
+            xstate_next__var = 2'h2;
+            mem_oe__var = 1'h1;
+            mem_fetch__var = 1'h1;
+            mem_add__var = pc;
             end
         2'h2: // req 1
             begin
-            xstate_next__var = 2'h3;
+            xstate_next__var = 2'h1;
             case (inst[15:12]) //synopsys parallel_case
-            4'h0: // req 1
-                begin
-                if (((inst[11:9] & psr[2:0])!=3'h0))
-                begin
-                    op_a__var = pc;
-                    if ((inst[8]!=1'h0))
-                    begin
-                        op_b__var = {7'h7f,inst[8:0]};
-                    end //if
-                    else
-                    begin
-                        op_b__var = {7'h0,inst[8:0]};
-                    end //else
-                    op_res__var = (op_a__var+op_b__var);
-                end //if
-                end
             4'h1: // req 1
                 begin
                 if ((inst[5]==1'h0))
@@ -172,13 +161,6 @@ module core
                     end //else
                 end //else
                 op_res__var = (op_a__var+op_b__var);
-                end
-            4'h9: // req 1
-                begin
-                xdr__var = inst[11:9];
-                xsr1__var = inst[8:6];
-                op_a__var = reg__value[xsr1__var];
-                op_res__var = ~op_a__var;
                 end
             4'h5: // req 1
                 begin
@@ -206,34 +188,157 @@ module core
                 end //else
                 op_res__var = (op_a__var & op_b__var);
                 end
+            4'h0: // req 1
+                begin
+                if (((inst[11:9] & psr[2:0])!=3'h0))
+                begin
+                    op_a__var = pc;
+                    if ((inst[8]==1'h0))
+                    begin
+                        op_b__var = {7'h0,inst[8:0]};
+                    end //if
+                    else
+                    begin
+                        op_b__var = {7'h7f,inst[8:0]};
+                    end //else
+                    op_res__var = (op_a__var+op_b__var);
+                end //if
+                end
+            4'hc: // req 1
+                begin
+                xsr1__var = inst[8:6];
+                end
+            4'h4: // req 1
+                begin
+                if ((inst[11]==1'h1))
+                begin
+                    op_a__var = pc;
+                    if ((inst[10]==1'h0))
+                    begin
+                        op_b__var = {5'h0,inst[10:0]};
+                    end //if
+                    else
+                    begin
+                        op_b__var = {5'h1f,inst[10:0]};
+                    end //else
+                    op_res__var = (op_a__var+op_b__var);
+                end //if
+                else
+                begin
+                    xsr1__var = inst[8:6];
+                end //else
+                end
+            4'h2: // req 1
+                begin
+                xdr__var = inst[11:9];
+                op_a__var = pc;
+                if ((inst[8]==1'h0))
+                begin
+                    op_b__var = {7'h0,inst[8:0]};
+                end //if
+                else
+                begin
+                    op_b__var = {7'h7f,inst[8:0]};
+                end //else
+                mem_add__var = (op_a__var+op_b__var);
+                mem_oe__var = 1'h1;
+                op_res__var = mem_in;
+                end
+            4'h6: // req 1
+                begin
+                xdr__var = inst[11:9];
+                xsr1__var = inst[8:6];
+                op_a__var = reg__value[xsr1__var];
+                if ((inst[5]==1'h0))
+                begin
+                    op_b__var = {10'h0,inst[5:0]};
+                end //if
+                else
+                begin
+                    op_b__var = {10'h3ff,inst[5:0]};
+                end //else
+                mem_add__var = (op_a__var+op_b__var);
+                mem_oe__var = 1'h1;
+                op_res__var = mem_in;
+                end
+            4'he: // req 1
+                begin
+                xdr__var = inst[11:9];
+                op_a__var = pc;
+                if ((inst[8]==1'h0))
+                begin
+                    op_b__var = {7'h0,inst[8:0]};
+                end //if
+                else
+                begin
+                    op_b__var = {7'h7f,inst[8:0]};
+                end //else
+                op_res__var = (op_a__var+op_b__var);
+                end
+            4'h9: // req 1
+                begin
+                xdr__var = inst[11:9];
+                xsr1__var = inst[8:6];
+                op_a__var = reg__value[xsr1__var];
+                op_res__var = ~op_a__var;
+                end
+            4'h3: // req 1
+                begin
+                xdr__var = inst[11:9];
+                op_a__var = pc;
+                if ((inst[8]==1'h0))
+                begin
+                    op_b__var = {7'h0,inst[8:0]};
+                end //if
+                else
+                begin
+                    op_b__var = {7'h7f,inst[8:0]};
+                end //else
+                mem_add__var = (op_a__var+op_b__var);
+                mem_we__var = 1'h1;
+                mem_out__var = reg__value[xdr__var];
+                end
+            4'h7: // req 1
+                begin
+                xdr__var = inst[11:9];
+                xsr1__var = inst[8:6];
+                op_a__var = reg__value[xsr1__var];
+                if ((inst[5]==1'h0))
+                begin
+                    op_b__var = {10'h0,inst[5:0]};
+                end //if
+                else
+                begin
+                    op_b__var = {10'h3ff,inst[5:0]};
+                end //else
+                mem_add__var = (op_a__var+op_b__var);
+                mem_we__var = 1'h1;
+                mem_out__var = reg__value[xdr__var];
+                end
             4'hf: // req 1
                 begin
                 trap__var = inst[7:0];
-                if ((trap__var==8'hff))
+                if ((trap__var==8'h25))
                 begin
-                    xstate_next__var = 2'h1;
+                    xstate_next__var = 2'h3;
                 end //if
                 end
             default: // req 1
                 begin
-                xstate_next__var = 2'h1;
+                xstate_next__var = 2'h3;
                 end
             endcase
             end
-        2'h3: // req 1
-            begin
-            xstate_next__var = 2'h2;
-            mem_oe__var = 1'h1;
-            mem_fetch__var = 1'h0;
-            mem_add__var = pc;
-            end
         default: // req 1
             begin
-            xstate_next__var = 2'h1;
+            xstate_next__var = 2'h3;
+            mem_add__var = 16'hffff;
             end
         endcase
         mem_oe = mem_oe__var;
+        mem_we = mem_we__var;
         mem_add = mem_add__var;
+        mem_out = mem_out__var;
         mem_fetch = mem_fetch__var;
         xdr = xdr__var;
         xsr1 = xsr1__var;
@@ -281,40 +386,14 @@ module core
                 end
             2'h1: // req 1
                 begin
-                inst <= inst;
-                pc <= 16'hffff;
+                pc <= (pc+16'h1);
+                inst <= mem_in;
                 end
             2'h2: // req 1
                 begin
                 inst <= inst;
                 case (inst[15:12]) //synopsys parallel_case
-                4'h0: // req 1
-                    begin
-                    if (((inst[11:9] & psr[2:0])!=3'h0))
-                    begin
-                        pc <= op_res;
-                    end //if
-                    end
                 4'h1: // req 1
-                    begin
-                    if ((op_res[15]==1'h0))
-                    begin
-                        if ((op_res==16'h0))
-                        begin
-                            psr[2:0] <= 3'h2;
-                        end //if
-                        else
-                        begin
-                            psr[2:0] <= 3'h1;
-                        end //else
-                    end //if
-                    else
-                    begin
-                        psr[2:0] <= 3'h4;
-                    end //else
-                    reg__value[xdr] <= op_res[15:0];
-                    end
-                4'h9: // req 1
                     begin
                     if ((op_res[15]==1'h0))
                     begin
@@ -352,9 +431,114 @@ module core
                     end //else
                     reg__value[xdr] <= op_res[15:0];
                     end
+                4'h0: // req 1
+                    begin
+                    if (((inst[11:9] & psr[2:0])!=3'h0))
+                    begin
+                        pc <= op_res;
+                    end //if
+                    end
+                4'hc: // req 1
+                    begin
+                    pc <= reg__value[xsr1];
+                    end
+                4'h4: // req 1
+                    begin
+                    reg__value[7] <= pc;
+                    if ((inst[11]==1'h1))
+                    begin
+                        pc <= op_res;
+                    end //if
+                    else
+                    begin
+                        pc <= reg__value[xsr1];
+                    end //else
+                    end
+                4'h2: // req 1
+                    begin
+                    if ((op_res[15]==1'h0))
+                    begin
+                        if ((op_res==16'h0))
+                        begin
+                            psr[2:0] <= 3'h2;
+                        end //if
+                        else
+                        begin
+                            psr[2:0] <= 3'h1;
+                        end //else
+                    end //if
+                    else
+                    begin
+                        psr[2:0] <= 3'h4;
+                    end //else
+                    reg__value[xdr] <= op_res;
+                    end
+                4'h6: // req 1
+                    begin
+                    if ((op_res[15]==1'h0))
+                    begin
+                        if ((op_res==16'h0))
+                        begin
+                            psr[2:0] <= 3'h2;
+                        end //if
+                        else
+                        begin
+                            psr[2:0] <= 3'h1;
+                        end //else
+                    end //if
+                    else
+                    begin
+                        psr[2:0] <= 3'h4;
+                    end //else
+                    reg__value[xdr] <= op_res;
+                    end
+                4'he: // req 1
+                    begin
+                    if ((op_res[15]==1'h0))
+                    begin
+                        if ((op_res==16'h0))
+                        begin
+                            psr[2:0] <= 3'h2;
+                        end //if
+                        else
+                        begin
+                            psr[2:0] <= 3'h1;
+                        end //else
+                    end //if
+                    else
+                    begin
+                        psr[2:0] <= 3'h4;
+                    end //else
+                    reg__value[xdr] <= op_res;
+                    end
+                4'h9: // req 1
+                    begin
+                    if ((op_res[15]==1'h0))
+                    begin
+                        if ((op_res==16'h0))
+                        begin
+                            psr[2:0] <= 3'h2;
+                        end //if
+                        else
+                        begin
+                            psr[2:0] <= 3'h1;
+                        end //else
+                    end //if
+                    else
+                    begin
+                        psr[2:0] <= 3'h4;
+                    end //else
+                    reg__value[xdr] <= op_res[15:0];
+                    end
+                4'h3: // req 1
+                    begin
+                    end
+                4'h7: // req 1
+                    begin
+                    end
                 4'hf: // req 1
                     begin
-                    if ((trap==8'h25))
+                    if ((trap==8'h30))
                     begin
                         led <= (led+8'h1);
                     end //if
@@ -364,13 +548,10 @@ module core
                     end
                 endcase
                 end
-            2'h3: // req 1
-                begin
-                pc <= (pc+16'h1);
-                inst <= mem_in;
-                end
             default: // req 1
                 begin
+                inst <= inst;
+                pc <= 16'hffff;
                 end
             endcase
             xstate <= xstate_next;

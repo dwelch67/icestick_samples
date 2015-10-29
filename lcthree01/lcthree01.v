@@ -1,5 +1,5 @@
 
-module blinker01
+module lcthree01
 (
     clk,
 

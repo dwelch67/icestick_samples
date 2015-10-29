@@ -6,5 +6,5 @@ not r0,r0
 inner:
 add r0,r0,#0xFFFF
 brnp inner
-trap 0x25
+trap 0x30
 brnzp outer

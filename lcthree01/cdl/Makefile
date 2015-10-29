@@ -43,6 +43,7 @@ lc3asm : lc3asm.c
 
 program.cdl : test.asm lc3asm
 	./lc3asm test.asm
+	rm -f build/linux/csram.cpp
 
 #a Editor preferences and notes
 # Local Variables: ***

@@ -48,18 +48,14 @@ module csram
     //b Clock gating module instances
     //b Module instances
     //b sram_code combinatorial process
-    always @( //sram_code
-        in_output_enable or
-        in_address or
-        in_write_enable or
-        in_data )
+    always @*
     begin: sram_code__comb_code
     reg [15:0]out_data__var;
         out_data__var = 16'hffff;
         if ((in_output_enable==1'h1))
         begin
             case (in_address) //parallel_case
-`include program.h
+`include "program.h"
             default: // req 1
                 begin
                 out_data__var = 16'hffff;

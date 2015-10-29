@@ -69,7 +69,7 @@ module csram
                 end
             16'h3002: // req 1
                 begin
-                out_data__var = 16'h9000;
+                out_data__var = 16'h1027;
                 end
             16'h3003: // req 1
                 begin
@@ -81,7 +81,7 @@ module csram
                 end
             16'h3005: // req 1
                 begin
-                out_data__var = 16'hf025;
+                out_data__var = 16'hf030;
                 end
             16'h3006: // req 1
                 begin
