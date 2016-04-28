@@ -1,0 +1,66 @@
+
+
+constant integer CLOCK_DIVISOR_RELOAD = 0x67;
+module uart03
+(
+    clock          clk,
+    input  bit     PMOD4,
+
+    output bit RS232_Tx
+)
+{
+    default clock clk ;
+    default reset active_high PMOD4 ;
+
+    clocked bit[7] clock_divider = CLOCK_DIVISOR_RELOAD;
+
+    clocked bit uart_tx = 1;
+    clocked bit[8] uart_tx_buffer = 0x30;
+
+    clocked bit[4] xstate = 0;
+
+    clocked bit[3] ucount = 1;
+
+    the_code:
+    {
+        if(clock_divider)
+        {
+            clock_divider <= clock_divider - 1;
+        }
+        else
+        {
+            clock_divider <= CLOCK_DIVISOR_RELOAD;
+            full_switch(xstate)
+            {
+                case 0:
+                {
+                    //start bit
+                    uart_tx <= 0; 
+                    xstate <= xstate + 1;
+                }
+                case 9:
+                {
+                    //stop bit
+                    uart_tx <= 1;
+                    uart_tx_buffer <= bundle(5b00110,ucount);
+                    ucount <= ucount + 1;
+                    xstate <= 0;
+                }
+                default:
+                {
+                    uart_tx <=  uart_tx_buffer[0];
+                    uart_tx_buffer[0] <= uart_tx_buffer[1];
+                    uart_tx_buffer[1] <= uart_tx_buffer[2];
+                    uart_tx_buffer[2] <= uart_tx_buffer[3];
+                    uart_tx_buffer[3] <= uart_tx_buffer[4];
+                    uart_tx_buffer[4] <= uart_tx_buffer[5];
+                    uart_tx_buffer[5] <= uart_tx_buffer[6];
+                    uart_tx_buffer[6] <= uart_tx_buffer[7];
+                    uart_tx_buffer[7] <= 0;
+                    xstate <= xstate + 1;
+                }
+            }
+        }
+        RS232_Tx = uart_tx;
+    }
+}

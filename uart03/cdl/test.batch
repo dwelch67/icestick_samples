@@ -1,0 +1,12 @@
+
+read_hw_file test.hwex
+vcd_file waves
+waves.reset
+waves.open "dut.vcd"
+waves.add_hierarchy top0
+waves.enable
+reset
+step 20000
+waves.close
+
+end

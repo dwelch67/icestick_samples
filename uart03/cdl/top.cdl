@@ -1,0 +1,24 @@
+
+include "uart03.h"
+
+module top
+(
+    clock          in_clock,
+    input  bit     in_reset
+)
+{
+    default clock in_clock ;
+    default reset active_high in_reset ;
+
+    net bit tx;
+
+    top_code:
+    {
+        uart03 u3
+        (
+            clk <- in_clock,
+            PMOD4 <= in_reset,
+            RS232_Tx => tx
+        );
+    }
+}
