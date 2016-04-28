@@ -1,0 +1,24 @@
+
+include "uart02.h"
+
+module top
+(
+    clock          in_clock,
+    input  bit     in_reset
+)
+{
+    default clock in_clock ;
+    default reset active_high in_reset ;
+
+    net bit tx;
+
+    top_code:
+    {
+        uart02 u2
+        (
+            clk <- in_clock,
+            PMOD4 <= in_reset,
+            RS232_Tx => tx
+        );
+    }
+}

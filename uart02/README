@@ -1,0 +1,6 @@
+
+See top level README for info on documentation and tools.
+
+Similar to uart01 but this sends the character V to the uart, since
+it is not a square wave a tiny bit more work is needed.
+
