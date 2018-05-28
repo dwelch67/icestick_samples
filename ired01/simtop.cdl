@@ -1,0 +1,50 @@
+
+include "ired01.h"
+
+module simtop
+(
+    clock       top_clk,
+    input bit   top_rst
+)
+{
+    default clock top_clk;
+    default reset active_low top_rst ;
+
+    clocked bit PMOD4 = 0;
+    clocked bit PMOD3 = 0;
+    clocked bit PMOD2 = 0;
+    clocked bit PMOD1 = 0;
+    clocked bit IRRXD = 0;
+    net bit IRTXD;
+    net bit IRSD;
+    net bit LED5;
+    net bit LED4;
+    net bit LED3;
+    net bit LED2;
+    net bit LED1;
+    the_code:
+    {
+        PMOD4 <= top_rst;
+        PMOD3 <= 0;
+        PMOD2 <= 0;
+        PMOD1 <= 0;
+        IRRXD <= 0;
+
+        ired01 hello
+        (
+            clk <- top_clk,
+            PMOD4 <= PMOD4 ,
+            PMOD3 <= PMOD3 ,
+            PMOD2 <= PMOD2 ,
+            PMOD1 <= PMOD1 ,
+            IRRXD <= IRRXD ,
+            IRTXD => IRTXD ,
+            IRSD  => IRSD  ,
+            LED5  => LED5  ,
+            LED4  => LED4  ,
+            LED3  => LED3  ,
+            LED2  => LED2  ,
+            LED1  => LED1
+        );
+    }
+}

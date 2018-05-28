@@ -1,0 +1,10 @@
+
+module simtop top0
+option_string "clock" top_clock
+#option_string "filename" test.th
+clock top_clock 10 5 5
+wire top_reset
+assign top_reset 1 20 0
+drive top0.top_clk top_clock
+drive top0.top_rst top_reset
+end

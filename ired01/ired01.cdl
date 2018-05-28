@@ -1,0 +1,158 @@
+
+module ired01
+(
+    clock clk,
+    output bit LED1,
+    output bit LED2,
+    output bit LED3,
+    output bit LED4,
+    output bit LED5,
+    output bit IRSD,
+    output bit IRTXD,
+    input bit IRRXD,
+    input bit PMOD1,
+    input bit PMOD2,
+    input bit PMOD3,
+    input bit PMOD4
+)
+{
+    default clock clk;
+    default reset active_high PMOD4 ;
+
+    clocked bit[32] XCOUNT = 0;
+    clocked bit LEDOUT = 0;
+    clocked bit[32] ICOUNT = 0;
+    clocked bit[9] div = 0;
+    clocked bit[4] rep = 0;
+//http://www.sbprojects.com/knowledge/ir/
+//JVC protocol.
+//10AF906F on
+//10AF40BF auto
+    clocked bit[32] data = 0x10AF40BF;
+    clocked bit[6] databit = 31;
+    clocked bit[10] state = 0;
+
+    the_code:
+    {
+        data <= 0x10AF40BF;
+        XCOUNT <= XCOUNT + 1;
+
+        if(div == 315)
+        {
+            div <= 0;
+            ICOUNT <= ICOUNT + 1;
+        }
+        else
+        {
+            div <= div + 1;
+        }
+
+        full_switch(state)
+        {
+            case 0:
+            {
+                ICOUNT <= 0;
+                div <= 0;
+                state <= 1;
+                databit <= 31;
+            }
+            case 1:
+            {
+                LEDOUT <= ICOUNT[0];
+                if(ICOUNT == 320)
+                {
+                    ICOUNT <= 0;
+                    state <= 2;
+                }
+            }
+            case 2:
+            {
+                LEDOUT <= 0;
+                if(ICOUNT == 160)
+                {
+                    ICOUNT <= 0;
+                    state <= 3;
+                }
+            }
+            case 3:
+            {
+                LEDOUT <= ICOUNT[0];
+                if(ICOUNT == 20)
+                {
+                    ICOUNT <= 0;
+                    if(data[databit] == 0)
+                    {
+                        state <= 4;
+                    }
+                    else
+                    {
+                        state <= 5;
+                    }
+                }
+            }
+            case 4:
+            {
+                LEDOUT <= 0;
+                if(ICOUNT == 20)
+                {
+                    ICOUNT <= 0;
+                    if(databit == 0)
+                    {
+                        state <= 6;
+                    }
+                    else
+                    {
+                        databit <= databit - 1;
+                        state <= 3;
+                    }
+                }
+            }
+            case 5:
+            {
+                LEDOUT <= 0;
+                if(ICOUNT == 40)
+                {
+                    ICOUNT <= 0;
+                    if(databit == 0)
+                    {
+                        state <= 6;
+                    }
+                    else
+                    {
+                        databit <= databit - 1;
+                        state <= 3;
+                    }
+                }
+            }
+            case 6:
+            {
+                if(rep == 3)
+                {
+                }
+                else
+                {
+                    ICOUNT <= 0;
+                    state <= 7;
+                }
+            }
+            case 7:
+            {
+                if(ICOUNT == 1000)
+                {
+                    rep <= rep + 1;
+                    state <= 0;
+                }
+            }
+            default:
+            {
+            }
+        }
+        LED1 = LEDOUT;
+        LED2 = 0;//IRRXD;
+        LED3 = ~IRRXD;
+        LED4 = 0;
+        LED5 = 0;
+        IRSD = 0;
+        IRTXD = LEDOUT;
+    }
+}
