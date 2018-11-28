@@ -1,0 +1,22 @@
+
+
+module test
+(
+    clock clk,
+    input bit reset_n,
+    output bit x_out
+)
+{
+    default clock clk;
+    default reset active_low reset_n;
+
+    clocked bit[32] counter = 0;
+    clocked bit x = 0;
+
+    the_code:
+    {
+        counter <= counter + 1;
+        x <= counter[4];
+        x_out = x;
+    }
+}
