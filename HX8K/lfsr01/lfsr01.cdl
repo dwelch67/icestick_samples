@@ -1,0 +1,61 @@
+
+module blinker01
+(
+    clock clk,
+    output bit LED0,
+    output bit LED1,
+    output bit LED2,
+    output bit LED3,
+    output bit LED4,
+    output bit LED5,
+    output bit LED6,
+    output bit LED7,
+    input bit NOTRESET
+)
+{
+    default clock clk;
+    default reset active_high NOTRESET ;
+
+
+    clocked bit[32] XCOUNT = 0;
+    clocked bit z = 0;
+
+    clocked bit xled0 = 0;
+    clocked bit xled1 = 1;
+    clocked bit xled2 = 0;
+    clocked bit xled3 = 1;
+    clocked bit xled4 = 0;
+    clocked bit xled5 = 1;
+    clocked bit xled6 = 0;
+    clocked bit xled7 = 1;
+    
+    the_code:
+    {
+        XCOUNT <= XCOUNT + 1;
+        if(XCOUNT[20] != z)
+        {
+        
+            z <= XCOUNT[20];
+
+            xled1 <= xled0;
+            xled2 <= xled1;
+            xled3 <= xled2;
+            xled4 <= xled3;
+            xled5 <= xled4;
+            xled6 <= xled5;
+            xled7 <= xled6;
+            xled0 <= xled3 ^ xled4 ^ xled5 ^ xled7;
+
+        }
+
+        LED0 = xled0;
+        LED1 = xled1;
+        LED2 = xled2;
+        LED3 = xled3;
+        LED4 = xled4;
+        LED5 = xled5;
+        LED6 = xled6;
+        LED7 = xled7;
+        
+    }
+}

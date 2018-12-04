@@ -1,0 +1,5 @@
+
+cdl_options ass:on cov:off
+
+cdl . simtop inc:.
+cdl . ired01 inc:.

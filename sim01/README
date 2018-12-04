@@ -1,0 +1,70 @@
+
+yosys has simulation capabilities!!!
+
+run yosys  then at the yosys prompt run these commands
+
+cdl --verilog test_cdl.v test.cdl
+
+
+Minimal changes required for this to work
+
+diff test_cdl.v test.v
+56c56
+<     always @( posedge clk or negedge reset_n)
+---
+>     always @( posedge clk )
+
+
+
+
+does not work
+
+read_verilog test.v
+sim -clock clk -resetn reset_n -vcd test.vcd -a -n 200 test
+
+works
+
+read_verilog test.v
+prep -top test
+sim -clock clk -resetn reset_n -vcd test.vcd -a -n 200 test
+
+works
+
+read_verilog test.v
+hierarchy -check -top test
+prep -top test
+sim -clock clk -resetn reset_n -vcd test.vcd -a -n 200 test
+
+works
+
+read_verilog test.v
+hierarchy -check -top test
+proc; opt; fsm; opt; memory; opt
+prep -top test
+sim -clock clk -resetn reset_n -vcd test.vcd -a -n 200 test
+
+works
+
+read_verilog test.v
+hierarchy -check -top test
+prep -top test
+write_verilog synth.v
+sim -clock clk -resetn reset_n -vcd test.vcd -a -n 200 test
+
+works
+
+read_verilog test.v
+hierarchy -check -top test
+proc; opt; fsm; opt; memory; opt
+prep -top test
+write_verilog synth.v
+sim -clock clk -resetn reset_n -vcd test.vcd -a -n 200 test
+
+does not work
+
+read_verilog test.v
+hierarchy -check -top test
+synth -top test
+prep -top test
+sim -clock clk -resetn reset_n -vcd test.vcd -a -n 200 -zinit test
+
